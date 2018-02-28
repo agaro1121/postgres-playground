@@ -36,3 +36,70 @@ EXPLAIN ANALYZE select * from film where film_id < 40;
 EXPLAIN ANALYZE select * from film where film_id > 40 and rating = 'PG-13';
 -- poorly written query. Does an index scan to get 40 rows then removes 32 of them with filter afterwards
 EXPLAIN ANALYZE select * from film where film_id < 40 and rating = 'PG-13';
+
+
+---------------------------------- indexes - Max: 32 columns
+  -- most effective when there are constraints on left-most (leading) column
+select 
+*
+from film
+where length = 60;
+
+EXPLAIN ANALYZE select 
+*
+from film
+where length = 60;
+
+CREATE INDEX idx_film_length ON film (length);
+
+DROP INDEX idx_film_length;
+----------------------- multi-column index -----------------------------------
+select title, length, rating, replacement_cost, rental_rate
+from film
+where length between 60 and 70 and rating = 'G'
+;
+
+explain analyze select title, length, rating, replacement_cost, rental_rate
+from film
+where length between 60 and 70 and rating = 'G'
+;
+
+CREATE INDEX idx_film_length ON film (length);
+CREATE INDEX idx_film_length_rating ON film (length, rating); -- these 2 indexes can co-exist. Postgres picks which one is better. Speed isnt' much better
+CREATE INDEX idx_film_rating_length ON film (rating, length); -- Postgres uses this one. It is much better since it is easier to query on rating since it is not in a range.
+/*
+	Instructions:
+	1) Play around to see which leading column gives your index better performance
+	2) Drop all other indexes with same columns so writes are not impacted
+*/
+
+DROP INDEX idx_film_length;
+DROP INDEX idx_film_length_rating;
+DROP INDEX idx_film_rating_length;
+
+----------------------- cover index -----------------------------------
+-- contains all the columns in select and where clauses
+
+select title, length, rating, replacement_cost, rental_rate
+from film
+where length between 60 and 70 and rating = 'G'
+;
+
+EXPLAIN ANALYZE select title, length, rating, replacement_cost, rental_rate
+from film
+where length between 60 and 70 and rating = 'G'
+;
+
+
+
+CREATE INDEX idx_film_cover ON film (rating, length, title, replacement_cost, rental_rate);
+
+----------------------- index maintenance -----------------------------------
+
+  -- reindex a specific index
+REINDEX INDEX idx_film_cover;
+  -- reindex whole table
+REINDEX TABLE film;
+
+
+
