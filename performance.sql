@@ -103,3 +103,82 @@ REINDEX TABLE film;
 
 
 
+----------------------- Unique indexes -----------------------------------
+
+/*
+	Unique Index - Basically, you never need to do this yourself
+	Primary Key - Automatically creates a Unique Index
+	Unique Constraint - Automatically creates a Unique Index
+*/
+
+create table SampleTable(
+	id integer PRIMARY KEY, --notice there is no index in the GUI, but it's still there somehow
+	firstcol character varying(40),
+	secondcol integer
+);
+
+-- view primary key index below
+SELECT
+	idx.indrelid :: REGCLASS AS table_name,
+	i.relname				 AS index_name, --rel = relation
+	idx.indisunique			 AS is_unique,
+	idx.indisprimary		 AS is_primary
+FROM pg_index AS idx	
+	JOIN pg_class as i ON idx.indexrelid = i.oid
+WHERE idx.indrelid = 'sampletable'::regclass
+;
+
+CREATE INDEX id_SampleTable_id ON SampleTable (id);
+
+ALTER TABLE sampletable
+	ADD CONSTRAINT sampletable_firstcol UNIQUE (firstcol); -- not visible in GUI
+
+CREATE UNIQUE INDEX unq_sampletable_firstcol ON SampleTable (firstcol); -- visible in GUI
+
+
+----------------------- Case insensitve search -----------------------------------
+
+select 
+* 
+from film
+where title = 'Arizona Bang';
+
+EXPLAIN ANALYZE select 
+* 
+from film
+where title = 'Arizona Bang';
+
+-- indexes are thrown out when functions are applied in where clauses like below
+EXPLAIN ANALYZE select 
+* 
+from film
+where lower(title) = 'arizona bang';
+
+EXPLAIN ANALYZE select 
+* 
+from film
+where lower(title) = lower('arizona bang');
+
+CREATE INDEX film_title_search_lower
+	ON film (lower(title)); --functions can be used in creating indexes
+
+
+----------------------- Partial Index -----------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
