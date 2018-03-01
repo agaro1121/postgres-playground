@@ -166,6 +166,21 @@ CREATE INDEX film_title_search_lower
 ----------------------- Partial Index -----------------------------------
 
 
+EXPLAIN ANALYZE select title, length, rental_rate
+FROM film
+WHERE length=50;
+
+EXPLAIN ANALYZE select title, length, rental_rate
+FROM film
+WHERE length=70;
+
+EXPLAIN ANALYZE select title, length, rental_rate
+FROM film
+WHERE length < 60;
+
+
+CREATE INDEX film_first ON film (length)
+WHERE length < 60;
 
 
 
@@ -176,9 +191,6 @@ CREATE INDEX film_title_search_lower
 
 
 
-
-
-
-
-
-
+---------------------------------------------------------------------
+-- analyze tables. This optimizes your table
+ANALYZE VERBOSE film;
