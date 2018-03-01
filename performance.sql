@@ -192,5 +192,23 @@ WHERE length < 60;
 
 
 ---------------------------------------------------------------------
+
+/*
+	- Disable autocommit and use transactions when inserting multiple rows 
+	- Drop indexes when populating tables with lots of inserts to increase speed
+*/
+
 -- analyze tables. This optimizes your table
 ANALYZE VERBOSE film;
+
+
+---------------------------------------------------------------------
+-- avoid long-running transactions. They block other stuff.
+-- frequently back up database
+-- keep OLAP and OLTP in dedicated servers
+-- plan schema changes during maintenance windows because they lock tables
+-- VACUUM Db on the regular. This replaims physical space from UPDATE and DELETE statements
+
+VACUUM VERBOSE film;
+
+
